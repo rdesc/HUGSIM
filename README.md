@@ -23,6 +23,12 @@
 
 ---
 
+# TODO list
+- [ ] Release sample data and results
+- [ ] Release unicycle model part
+- [ ] Release GUI
+- [ ] Release more scenarios
+
 # Installation
 
 Requirements are not in principle hard requirements, but there might be some differences (not tested):
@@ -53,6 +59,12 @@ Please install packages required by [InverseForm](https://github.com/Qualcomm-AI
 Install remaining dependencies by:
 ``` bash
 pip install -r requirements.txt
+```
+
+To run the closed-loop simulation, the hug_sim gymnasium environment should be installed:
+``` bash
+cd ./sim
+pip install -e .
 ```
 
 # Data Preparation
