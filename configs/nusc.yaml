@@ -1,0 +1,9 @@
+source_path: "sourcepath"
+model_path: "modelpath"
+semantic: True
+affine: True
+unicycle: False
+uc_reg: False
+uc_fit_iter: 100
+ignore_dynamic: False
+data_type: nuscenes

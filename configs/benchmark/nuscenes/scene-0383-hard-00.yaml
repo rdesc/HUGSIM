@@ -1,0 +1,30 @@
+mode: hard_00
+plan_list:
+- - 2.2
+  - 13.0
+  - -0.3
+  - 0.02
+  - 2.0
+  - "2024_07_05_10_58_02"
+  - ConstantPlanner
+  - {}
+- - 0.0
+  - 10.0
+  - -0.3
+  - 0.02
+  - 2.0
+  - "2024_07_05_16_10_02"
+  - ConstantPlanner
+  - {}
+load_HD_map: false
+start_euler:
+- 0.0
+- 0.0
+- 0.0
+start_ab:
+- 0.0
+- 0.0
+start_velo: 1
+start_steer: 0
+scene_name: scene-0383
+iteration: 30000

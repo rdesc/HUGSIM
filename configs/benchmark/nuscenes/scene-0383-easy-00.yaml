@@ -1,0 +1,14 @@
+mode: easy_00
+plan_list: []
+load_HD_map: false
+start_euler:
+- 0.0
+- 0.0
+- 0.0
+start_ab:
+- 0.0
+- 0.0
+start_velo: 1
+start_steer: 0
+scene_name: scene-0383
+iteration: 30000
