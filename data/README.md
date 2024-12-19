@@ -26,9 +26,9 @@ zsh ./waymo/run.sh
 ```
 </details>
 
-<details> <summary>Nuscenes</summary>
+<details> <summary>NuScenes</summary>
 
-Download Nuscenes dataset from [Nuscenes Website](https://www.nuscenes.org/nuscenes#download).
+Download Nuscenes dataset from [nuScenes Website](https://www.nuscenes.org/nuscenes#download).
 
 The original key frames in Nuscenes are 2Hz, which is too sparse to reconstruct. Please follow [ASAP](https://github.com/JeffWang987/ASAP/tree/52316629f2a87ef2ef5bbc634d33e9544b5e39a7) to convert sweep data as key frames. The output version of **ASAP** is **interp_12Hz_trainval**.
 
