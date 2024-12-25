@@ -1,23 +1,25 @@
 mode: extreme_00
 plan_list:
 - - 0.0
-  - -20.0
+  - -15.0
   - -0.3
   - 0
   - 3.0
-  - "2024_06_04_15_45_41"
+  - "2024_07_02_14_20_29"
   - AttackPlanner
   - pred_steps: 20
     ATTACK_FREQ: 10
     best_k: 10
 - - 2.0
-  - 20.0
+  - 10.0
   - -0.3
   - 0
   - 0
-  - "2024_07_02_14_14_52"
-  - ConstantPlanner
-  - {}
+  - "2024_07_05_11_02_48"
+  - AttackPlanner
+  - pred_steps: 20
+    ATTACK_FREQ: 3
+    best_k: 2
 load_HD_map: false
 start_euler:
 - 0.0

@@ -3,11 +3,11 @@
 cuda=4
 export CUDA_VISIBLE_DEVICES=$cuda
 
-# base_dir="/nas/datasets/Waymo_NOTR/static"
-# segment="segment-16608525782988721413_100_000_120_000_with_camera_labels.tfrecord"
+base_dir="/nas/datasets/Waymo_NOTR/static"
+segment="segment-10061305430875486848_1080_000_1100_000_with_camera_labels.tfrecord"
 
-base_dir="/nas/datasets/Waymo_NOTR/dynamic"
-segment="segment-16801666784196221098_2480_000_2500_000_with_camera_labels.tfrecord"
+# base_dir="/nas/datasets/Waymo_NOTR/dynamic"
+# segment="segment-16801666784196221098_2480_000_2500_000_with_camera_labels.tfrecord"
 
 seg_prefix=$(echo $segment| cut -c 9-15)
 seq_name=${seg_prefix}

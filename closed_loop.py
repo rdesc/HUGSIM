@@ -128,6 +128,7 @@ if __name__ == "__main__":
         ad_path = cfg.base.ltf_path
     else:
         raise NotImplementedError
+    
     process = launch(ad_path, args.ad_cuda, output)
     try:
         create_gym_env(cfg, output)

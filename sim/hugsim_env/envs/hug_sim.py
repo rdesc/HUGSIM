@@ -95,7 +95,7 @@ class HUGSimEnv(gymnasium.Env):
         
         self.ego_verts = np.array([[0.5, 0, 0.5], [0.5, 0, -0.5], [0.5, 1.0,  0.5], [0.5, 1.0, -0.5],
                     [-0.5, 0, -0.5], [-0.5, 0, 0.5], [-0.5, 1.0, -0.5], [-0.5, 1.0, 0.5]])
-        self.whl = np.array([1.6, 1.6, 3.0])
+        self.whl = np.array([1.6, 1.5, 3.0])
         self.ego_verts *= self.whl
         self.data_type = cfg.data_type
 
@@ -179,7 +179,7 @@ class HUGSimEnv(gymnasium.Env):
             (cam_poses[:, 0, 3] - self.vab[0])**2 + (cam_poses[:, 2, 3] - self.vab[1])**2
         )
         nearest_cam_idx = np.argmin(cam_dist, axis=0)
-        return (nearest_cam_idx + 1) / (cam_poses.shape[0] * 0.9)
+        return (nearest_cam_idx + 1) / (cam_poses.shape[0] * 0.9), cam_dist[nearest_cam_idx]
         
 
     @property
@@ -209,7 +209,7 @@ class HUGSimEnv(gymnasium.Env):
             yaw = SCR.from_matrix(obj_b2w[:3, :3].detach().cpu().numpy()).as_euler('YXZ')[0]
             # X, Y, Z in IMU, w, l, h
             wlh = self.planner.wlhs[obj_id]
-            obj_boxes.append([obj_b2w[2, 3].item(), -obj_b2w[0, 3].item(), -obj_b2w[1, 3].item(), wlh[0], wlh[1], wlh[2], -yaw])
+            obj_boxes.append([obj_b2w[2, 3].item(), -obj_b2w[0, 3].item(), -obj_b2w[1, 3].item(), wlh[0], wlh[1], wlh[2], -yaw-0.5*np.pi])
         return obj_boxes
 
     def _get_obs(self):
@@ -304,9 +304,14 @@ class HUGSimEnv(gymnasium.Env):
         if fg_collision:
             terminated = True
             print('Collision with foreground')
-            reward = -1000
+            reward = -100
 
-        rc = self.route_completion
+        rc, dist = self.route_completion
+        if dist > 10:
+            terminated=True
+            print('Far from preset trajectory')
+            reward = -50
+            
         if rc >= 1:
             terminated = True
             print('Complete')

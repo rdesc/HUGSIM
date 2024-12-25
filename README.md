@@ -22,7 +22,7 @@
   <br>
 
   <p align="left">
-    This is the official project repository of the paper <b>HUGSIM: A Real-Time, Photo-Realistic and Closed-Loop Simulator for Autonomous Driving</b>
+    This is the official project repository of the paper <b>HUGSIM: A Real-Time, Photo-Realistic and Closed-Loop Simulator for Autonomous Driving</b>.
   </p>
   
 </div>
@@ -30,7 +30,7 @@
 ---
 
 # TODO list
-- [ ] Release sample data and results
+- [x] Release sample data and results
 - [ ] Release unicycle model part
 - [ ] Release GUI
 - [ ] Release more scenarios
@@ -67,7 +67,7 @@ Install remaining dependencies by:
 pip install -r requirements.txt
 ```
 
-To run the closed-loop simulation, the hug_sim gymnasium environment should be installed:
+To run the closed-loop simulation, the hug_sim Gymnasium environment should be installed:
 ``` bash
 cd ./sim
 pip install -e .
@@ -77,7 +77,7 @@ pip install -e .
 
 Please refer to [Data Preparation Document](data/README.md)
 
-We will provide sample sequence data and reconstructed results. The download link will be provided later.
+You can download sample data from [here](https://huggingface.co/datasets/hyzhou404/HUGSIM/resolve/main/sample_data.zip), which includes a sample sequence, results of the sequence reconstruction, and results of 3dRealCar vehicles reconstruction.
 
 # Reconstruction
 
@@ -98,6 +98,23 @@ python -u train.py --data_cfg ./configs/${dataset_name}.yaml \
 
 **Before simulation, [UniAD_SIM](https://github.com/hyzhou404/UniAD_SIM), [VAD_SIM](https://github.com/hyzhou404/VAD_SIM) and [NAVSIM](https://github.com/hyzhou404/NAVSIM) client should be installed.**
 
+In **closed_loop.py**, we automatically launch autonomous driving algorithms. In practice, you may encounter errors due to an incorrect environment, path, and etc. For debugging purposes, you can modify the last part of code as:
+```python
+# process = launch(ad_path, args.ad_cuda, output)
+# try:
+#     create_gym_env(cfg, output)
+#     check_alive(process)
+# except Exception as e:
+#     print(e)
+#     process.kill()
+
+# For debug
+create_gym_env(cfg, output)
+```
+
+Paths in **configs/sim/\*\_base.yaml** should be updated as paths on your machine.
+
+
 ``` bash
 CUDA_VISIBLE_DEVICES=${sim_cuda} \
 python closed_loop.py --scenario_path ${scenario_cfg_path} \
@@ -106,6 +123,24 @@ python closed_loop.py --scenario_path ${scenario_cfg_path} \
             --kinematic_path ./configs/sim/kinematic.yaml \
             --ad ${method_name: [uniad, vad, ltf]} \
             --ad_cuda ${ad_cuda}
+```
+
+Run the following commands to execute the provided examples.
+
+```bash
+sim_cuda=0
+ad_cuda=1
+scenario_dir=./configs/benchmark/nuscenes
+for cfg in ${scenario_dir}/*.yaml; do
+    echo ${cfg}
+    CUDA_VISIBLE_DEVICES=${sim_cuda} \
+    python closed_loop.py --scenario_path ${cfg} \
+                        --base_path ./configs/sim/nuscenes_base.yaml \
+                        --camera_path ./configs/sim/nuscenes_camera.yaml \
+                        --kinematic_path ./configs/sim/kinematic.yaml \
+                        --ad uniad \
+                        --ad_cuda ${ad_cuda}
+done
 ```
 
 
