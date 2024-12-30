@@ -77,7 +77,7 @@ pip install -e .
 
 Please refer to [Data Preparation Document](data/README.md)
 
-You can download sample data from [here](https://huggingface.co/datasets/hyzhou404/HUGSIM/resolve/main/sample_data.zip), which includes a sample sequence, results of the sequence reconstruction, and results of 3dRealCar vehicles reconstruction.
+You can download sample data from [here](https://huggingface.co/datasets/hyzhou404/HUGSIM/tree/main/sample_data), which includes a sample sequence, results of the sequence reconstruction, and results of 3dRealCar vehicles reconstruction.
 
 # Reconstruction
 
