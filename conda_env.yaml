@@ -1,0 +1,68 @@
+name: hugsim
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  # Conda packages (installed via conda-forge, pytorch, nvidia, or defaults)
+  - numpy
+  - matplotlib
+  - pandas
+  - scikit-learn
+  - opencv            # OpenCV libraries from conda-forge
+  - scipy
+  - open3d
+  - pillow
+  - scikit-image
+  - shapely
+  - imageio
+  - ipdb
+  - tabulate
+  - tqdm
+  - omegaconf
+  - pyyaml
+  - h5py
+  - cffi
+  - wget
+  - curl
+  - gtk2            # GTK2 package (replaces libgtk2.0-dev)
+  - git-lfs
+  - colmap
+  # Pip packages (to be installed via pip)
+  - pip:
+      # PyTorch stack 
+      - torch==2.5.1 --index-url https://download.pytorch.org/whl/cu118
+      - torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu118
+      - torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118
+      - gsplat
+      # UniDepth (installing from forked repo with fixed requirements.txt)
+      - git+https://github.com/rdesc/UniDepth.git@main#egg=UniDepth --extra-index-url https://download.pytorch.org/whl/cu118
+      # Optical flow visualization for PyTorch
+      - git+https://github.com/ChristophReich1996/Optical-Flow-Visualization-PyTorch
+      # Dataset dependencies:
+      - nuscenes-devkit
+      - git+https://github.com/gdlg/simple-waymo-open-dataset-reader.git
+      - git+https://github.com/autonomousvision/kitti360Scripts.git
+      - git+https://github.com/scaleapi/pandaset-devkit.git#subdirectory=python
+      # From requirements.txt:
+      - geometry
+      # Additional packages from InverseForm Dockerfile:
+      - piexif
+      - dominate
+      - nose
+      - fire
+      # tiny-cuda-nn (bindings for torch) -- placed after torch is installed
+      - git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+      # Pip-only packages 
+      - jaxtyping
+      - l5kit
+      - mediapy
+      - plyfile
+      - pyquaternion
+      - roma
+      - runx==0.0.6
+      - trajdata
+      - gymnasium
