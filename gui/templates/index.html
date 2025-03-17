@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+	<head>
+		<title>WebGL Gaussian Splat Viewer</title>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
+		/>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent"
+		/>
+		<!-- <link rel="stylesheet" href="bootstrap.css"> -->
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: sans-serif;
+				background: #000000;
+				color: #333;
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+				width: 100vw;
+			}
+
+			.canvas-container {
+				display: flex;
+				justify-content: space-between;
+				width: 100vw;
+				height: 60vh;
+				background: #000000;
+			}
+
+			#leftCanvas, #rightCanvas {
+				background: #000000;
+			}
+
+			#leftCanvas {
+				width: 25%;
+				height: 100%;
+			}
+
+			#rightCanvas {
+				width: 75%;
+				height: 100%;
+			}
+
+			.content-container {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 20px;
+				padding: 20px;
+				flex: 1;
+			}
+
+			.left_content-section {
+				flex: 1 1 40%;
+				min-width: 300px;
+				background: #fff;
+				border: 1px solid #ddd;
+				border-radius: 3px;
+				padding: 10px;
+				box-sizing: border-box;
+			}
+			.right_content-section {
+				flex: 1 1 55%;
+				min-width: 300px;
+				background: #fff;
+				border: 1px solid #ddd;
+				border-radius: 3px;
+				padding: 10px;
+				box-sizing: border-box;
+			}
+			#table input[type="range"] {
+				width: 110px; 
+			}
+
+			button {
+				padding: 5px 10px;
+				margin: 5px 0;
+				border: none;
+				border-radius: 5px;
+				background-color: #90EE90;
+				color: white;
+				cursor: pointer;
+				font-size: 13px;
+				transition: background-color 0.3s;
+			}
+
+			button:hover {
+				background-color:#228B22;
+			}
+
+			button:disabled {
+				background-color: #ccc;
+				cursor: not-allowed;
+			}
+
+			#car_appearance_selector {
+				padding: 10px;
+				margin: 5px 0;
+				border: 1px solid #ccc;
+				border-radius: 5px;
+				font-size: 16px;
+				width: 10%;
+			}
+
+			#table {
+				width: 100%;
+				margin: 5px 0;
+				border-collapse: collapse;
+				text-align: left;
+			}
+
+			#table th, #table td {
+				padding: 3px;
+				border: 1px solid #ddd;
+			}
+
+			#table th {
+				background-color: #f0f0f0;
+				font-weight: bold;
+			}
+
+			#table tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+
+			.hidden {
+				display: none;
+			}
+
+		</style>
+
+	    <!-- use CDN  instead of native  -->
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
+					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.171.0/examples/jsm/"
+					}
+			}
+		</script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+		<!-- <script type="module" src="point_cloud.js"></script>
+		<script src="main.js"></script> -->
+	</head>
+	<body>
+		
+		<script>
+			if(location.host.includes('hf.space')) document.body.classList.add('nohf');
+		</script>
+	
+		<div class="canvas-container">
+			<canvas id="leftCanvas"></canvas>
+			<canvas id="rightCanvas"></canvas>
+		</div>
+	
+		<div class="content-container">
+			<div class="left_content-section">
+				<div class="instructions">
+					<h3>This GUI is used for scenario configuration. The rendering results are only for visualization, which is not the rendering results used in simulation.</h3> 
+					<h4>Senario Configuration:</h4> 
+					<p>
+						1) Define the position and orientation of vehicles by clicking on the point cloud. <br>
+						2) Select the inserted vehicle appearance and insert it into the scene.<br>
+						3) The behavior of the vehicle can be defined in the right panel.<br>
+						4) Download the yaml file and use it in the simulation.<br>
+					</p>
+				</div>
+				<button type="button" id="generate_btn">Insert the Vehicle</button>
+				<button id="saveConfigBtn">Save Configurations</button>
+				<button id="reset_btn"> Reset Ego </button>
+				<label for="car_appearance">Vehicle Appearance:</label>
+				<select id="car_appearance_selector">
+					<!-- <option>1</option>
+					<option>2</option> -->
+				</select>
+				<div id="quality" class="hidden">
+					<span id="fps">FPS: 0</span>
+				</div>
+				<div id="caminfo" class="hidden">
+					<span id="camid">Camera ID: </span>
+				</div>
+				<div id="point_info" class="hidden">
+					<!-- <h3>You have chosen the point</h3> -->
+					<div id="point_x">X: <span id="x_value">0</span></div>
+					<div id="point_y">Y: <span id="y_value">0</span></div>
+					<div id="point_z">Z: <span id="z_value">0</span></div>
+				</div>
+				<div id="yaw_info" class="hidden">
+					<h4>Yaw Control</h4>
+					<input type="range" id="yaw_slider" min="-3.14" max="3.14" step="0.01">
+				</div>
+				<div id="progress"></div>
+				<div id="message"></div>
+			</div>
+	
+			<div class="cube">
+				<div id="spinner" class="scene">
+					<div class="cube-wrapper">
+						<div class="cube">
+							<div class="cube-faces">
+								<div class="cube-face top"></div>
+								<div class="cube-face front"></div>
+								<div class="cube-face back"></div>
+								<div class="cube-face left"></div>
+								<div class="cube-face right"></div>
+								<div class="cube-face bottom"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="right_content-section">
+				<table id="table">
+					<tr>
+						<th>car_id</th>
+						<th>car_yaw</th>
+						<th>car_type</th>
+						<th>car_speed</th>
+						<th>car_kwargs</th>
+					</tr>
+				</table>
+			</div>
+	
+		</div>
+	</body>
+	<script>
+		const scene_file = "{{ scene_file }}";
+		console.log(scene_file);
+		const carFiles = JSON.parse('{{ car_files | tojson }}');
+		const smt_file = "{{ smt_file }}";
+		const carSelector = document.getElementById("car_appearance_selector");
+		carFiles.forEach(carFile => {
+			carFile = carFile.replace(".splat", "");
+			const option = document.createElement("option");
+			option.value = carFile;
+			option.textContent = carFile;
+			carSelector.appendChild(option);
+		});
+		console.log("done");
+	</script>
+	<script type="module" src="{{ url_for('static', filename='js/point_cloud.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</html>

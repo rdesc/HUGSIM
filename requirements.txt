@@ -3,26 +3,25 @@ gymnasium==1.0.0
 imageio==2.36.1
 ipdb==0.13.13
 jaxtyping==0.2.36
-l5kit==1.5.0
-matplotlib==3.10.0
+# l5kit==1.5.0
+matplotlib
 mediapy==1.2.2
-numpy==2.2.0
+numpy
 omegaconf==2.3.0
 open3d==0.18.0
 opencv_python==4.10.0.84
 pandas==2.2.3
-pandaset==0.3.dev0
+# pandaset
 Pillow==11.0.0
 plyfile==1.1
 pyquaternion==0.9.9
-PyYAML==6.0.2
 PyYAML==6.0.2
 roma==1.5.1
 runx==0.0.6
 scipy==1.14.1
 setuptools==75.1.0
 Shapely==2.0.6
-skimage==0.0
+scikit-image
 tabulate==0.9.0
 tqdm==4.67.1
 trajdata==1.4.0

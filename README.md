@@ -29,12 +29,6 @@
 
 ---
 
-# TODO list
-- [x] Release sample data and results
-- [ ] Release unicycle model part
-- [ ] Release GUI
-- [ ] Release more scenarios
-
 # Installation
 
 Requirements are not in principle hard requirements, but there might be some differences (not tested):
@@ -93,6 +87,28 @@ CUDA_VISIBLE_DEVICES=4 \
 python -u train.py --data_cfg ./configs/${dataset_name}.yaml \
         --source_path ${input_path} --model_path ${output_path}
 ```
+
+# Configuration with GUI
+
+First convert the vehicles and scenes to splat format.
+The splat format downgrades the quality of only for visulization.
+Note that the GUI is only for configuration, the rendering quality in GUI is not the results during simulation.
+
+``` bash
+python eval_render/convert_vehicles.py --vehicle_path ${sample_data/3DRealCar}
+python eval_render/convert_scene.py --model_path ${sample_data/scene-0383} --iteration 30000
+```
+
+Then, you can run the GUI to configure the scenario. 
+**nuscenes_camera.yaml** in gui/static/data provides a camera configuration template, you can modify it to fit your needs.
+
+``` bash
+cd gui
+python app.py --scene ${sample_data/scene-0383} --car_folder ${sample_data/3DRealCar/converted}
+```
+
+You can configure the scenario with the GUI, and download the yaml file to use in simulation.
+
 
 # Simulation
 

@@ -13,6 +13,7 @@ import open3d as o3d
 import tinycudann as tcnn
 from math import sqrt
 from scene.ground_model import GroundModel
+from io import BytesIO
 
                 
 class GaussianModel:
@@ -290,17 +291,27 @@ class GaussianModel:
             l.append('rot_{}'.format(i))
         return l
 
-    def save_ply(self, path):
+    def save_ply(self, path=None):
         mkdir_p(os.path.dirname(path))
 
-        xyz = self._xyz.detach().cpu().numpy()
-        normals = np.zeros_like(xyz)
-        f_dc = self._features_dc.detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
-        f_rest = self._features_rest.detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
-        feats3D = self._feats3D.detach().cpu().numpy()
-        opacities = self._opacity.detach().cpu().numpy()
-        scale = self._scaling.detach().cpu().numpy()
-        rotation = self._rotation.detach().cpu().numpy()
+        if self.ground_model is not None:
+            xyz = self.get_full_xyz.detach().cpu().numpy()
+            normals = np.zeros_like(xyz)
+            f_dc = torch.cat([self._features_dc, self.ground_model._features_dc]).detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
+            f_rest = torch.cat([self._features_rest, self.ground_model._features_rest]).detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
+            feats3D = torch.cat([self._feats3D, self.ground_model._feats3D]).detach().cpu().numpy()
+            opacities = torch.cat([self._opacity, self.ground_model._opacity]).detach().cpu().numpy()
+            scale = self.scaling_inverse_activation(self.get_full_scaling).detach().cpu().numpy()
+            rotation = torch.cat([self._rotation, self.ground_model._rotation]).detach().cpu().numpy()
+        else:
+            xyz = self.get_xyz.detach().cpu().numpy()
+            normals = np.zeros_like(xyz)
+            f_dc = self._features_dc.detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
+            f_rest = self._features_rest.detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
+            feats3D = self._feats3D.detach().cpu().numpy()
+            opacities = self._opacity.detach().cpu().numpy()
+            scale = self.scaling_inverse_activation(self.get_scaling).detach().cpu().numpy()
+            rotation = self._rotation.detach().cpu().numpy()
 
         dtype_full = [(attribute, 'f4') for attribute in self.construct_list_of_attributes()]
 
@@ -308,7 +319,91 @@ class GaussianModel:
         attributes = np.concatenate((xyz, normals, f_dc, f_rest, feats3D, opacities, scale, rotation), axis=1)
         elements[:] = list(map(tuple, attributes))
         el = PlyElement.describe(elements, 'vertex')
-        PlyData([el]).write(path)
+        plydata = PlyData([el])
+        if path is not None:
+            plydata.write(path)
+        return plydata
+
+    def save_splat(self, ply_path, splat_path):
+        plydata = self.save_ply(ply_path)
+        vert = plydata["vertex"]
+        sorted_indices = np.argsort(
+            -np.exp(vert["scale_0"] + vert["scale_1"] + vert["scale_2"])
+            / (1 + np.exp(-vert["opacity"]))
+        )
+        buffer = BytesIO()
+        for idx in sorted_indices:
+            v = plydata["vertex"][idx]
+            position = np.array([v["x"], v["y"], v["z"]], dtype=np.float32)
+            scales = np.exp(
+                np.array(
+                    [v["scale_0"], v["scale_1"], v["scale_2"]],
+                    dtype=np.float32,
+                )
+            )
+            rot = np.array(
+                [v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]],
+                dtype=np.float32,
+            )
+            SH_C0 = 0.28209479177387814
+            color = np.array(
+                [
+                    0.5 + SH_C0 * v["f_dc_0"],
+                    0.5 + SH_C0 * v["f_dc_1"],
+                    0.5 + SH_C0 * v["f_dc_2"],
+                    1 / (1 + np.exp(-v["opacity"])),
+                ]
+            )
+            buffer.write(position.tobytes())
+            buffer.write(scales.tobytes())
+            buffer.write((color * 255).clip(0, 255).astype(np.uint8).tobytes())
+            buffer.write(
+                ((rot / np.linalg.norm(rot)) * 128 + 128)
+                .clip(0, 255)
+                .astype(np.uint8)
+                .tobytes()
+            )
+        with open(splat_path, "wb") as f:
+            f.write(buffer.getvalue())
+
+    def save_semantic_pcd(self, path):
+        color_dict = {
+            0: np.array([128, 64, 128]),  # Road
+            1: np.array([244, 35, 232]),  # Sidewalk
+            2: np.array([70, 70, 70]),  # Building
+            3: np.array([102, 102, 156]),  # Wall
+            4: np.array([190, 153, 153]),  # Fence
+            5: np.array([153, 153, 153]),  # Pole
+            6: np.array([250, 170, 30]),  # Traffic Light
+            7: np.array([220, 220, 0]),  # Traffic Sign
+            8: np.array([107, 142, 35]),  # Vegetation
+            9: np.array([152, 251, 152]),  # Terrain
+            10: np.array([0, 0, 0]),  # Black (trainId 10)
+            11: np.array([70, 130, 180]),  # Sky
+            12: np.array([220, 20, 60]),  # Person
+            13: np.array([255, 0, 0]),  # Rider
+            14: np.array([0, 0, 142]),  # Car
+            15: np.array([0, 0, 70]),  # Truck
+            16: np.array([0, 60, 100]),  # Bus
+            17: np.array([0, 80, 100]),  # Train
+            18: np.array([0, 0, 230]),  # Motorcycle
+            19: np.array([119, 11, 32])  # Bicycle
+        }
+        semantic_idx = torch.argmax(self.get_full_3D_features, dim=-1, keepdim=True)
+        opacities = self.get_full_opacity[:, 0]
+        mask = ((semantic_idx != 10)[:, 0]) & ((semantic_idx != 8)[:, 0]) & (opacities > 0.2)
+
+        semantic_idx = semantic_idx[mask]
+        semantic_rgb = torch.zeros_like(semantic_idx).repeat(1, 3)
+        for idx in range(20):
+            rgb = torch.from_numpy(color_dict[idx]).to(semantic_rgb.device)[None, :]
+            semantic_rgb[(semantic_idx == idx)[:, 0], :] = rgb
+        semantic_rgb = semantic_rgb.float() / 255.0
+        pcd_xyz = self.get_full_xyz[mask]
+        smt_pcd = o3d.geometry.PointCloud()
+        smt_pcd.points = o3d.utility.Vector3dVector(pcd_xyz.detach().cpu().numpy())
+        smt_pcd.colors = o3d.utility.Vector3dVector(semantic_rgb.detach().cpu().numpy())
+        o3d.io.write_point_cloud(path, smt_pcd)
 
     def save_vis_ply(self, path):
         mkdir_p(os.path.dirname(path))
