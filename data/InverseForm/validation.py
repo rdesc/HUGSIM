@@ -31,7 +31,6 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore")
     
 torch.backends.cudnn.benchmark = True    
-    
 palette = [128, 64, 128,
             244, 35, 232,
             70, 70, 70,
@@ -60,12 +59,10 @@ def set_apex_params(local_rank):
     """
     Setting distributed parameters for Apex
     """
-    if 'WORLD_SIZE' in os.environ:
-        world_size = int(os.environ['WORLD_SIZE'])
-        global_rank = int(os.environ['RANK'])
-        
-    print('GPU {} has Rank {}'.format(
-        local_rank, global_rank))
+    world_size = int(os.environ['WORLD_SIZE'])  # worker RANK and WORLD_SIZE are assigned automatically with torchrun
+    global_rank = int(os.environ['RANK'])
+
+    print('GPU {} has Rank {}'.format(local_rank, global_rank))
     torch.cuda.set_device(local_rank)
     torch.distributed.init_process_group(backend='nccl',
                                          init_method='env://')

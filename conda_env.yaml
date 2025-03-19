@@ -31,13 +31,14 @@ dependencies:
   - gtk2            # GTK2 package (replaces libgtk2.0-dev)
   - git-lfs
   - colmap
-  # Pip packages (to be installed via pip)
+  # Pip packages
   - pip:
       # PyTorch stack 
       - torch==2.5.1 --index-url https://download.pytorch.org/whl/cu118
       - torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu118
       - torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118
-      - gsplat
+      # gsplat
+      - git+https://github.com/hyzhou404/HUGSIM_splat.git
       # UniDepth (installing from forked repo with fixed requirements.txt)
       - git+https://github.com/rdesc/UniDepth.git@main#egg=UniDepth --extra-index-url https://download.pytorch.org/whl/cu118
       # Optical flow visualization for PyTorch
@@ -54,6 +55,7 @@ dependencies:
       - dominate
       - nose
       - fire
+      # - git+https://github.com/NVIDIA/apex.git#egg=apex --no-build-isolation --config-settings=--build-option=--cpp_ext --config-settings=--build-option=--cuda_ext
       # tiny-cuda-nn (bindings for torch) -- placed after torch is installed
       - git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
       # Pip-only packages 
@@ -66,3 +68,8 @@ dependencies:
       - runx==0.0.6
       - trajdata
       - gymnasium
+      - tensorboard
+      # 3DGS https://github.com/graphdeco-inria/gaussian-splatting
+      - submodules/simple-knn
+      # other stuff
+      - torchmetrics
