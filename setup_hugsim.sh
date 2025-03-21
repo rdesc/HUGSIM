@@ -1,27 +1,7 @@
-#####################################################
+####### NOTE: probably best to execute line by line rather than trying to run this as a script #######
 
-# option 1: build from source in a new conda env
-conda create --name colmap python=3.9
-conda activate colmap
-
-module load cudatoolkit/11.8  # mila cluster, for enabling cuda
-
-conda install -c conda-forge -y cmake ninja libboost boost eigen flann freeimage metis glog gtest gmock sqlite glew qt libopengl pyqt icu sip cgal ceres-solver freeglut mesa mesalib gcc_linux-64=10 gxx_linux-64=10
-
-git clone https://github.com/colmap/colmap.git
-cd colmap
-mkdir build
-cd build
-cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=75 -DCMAKE_INSTALL_PREFIX=$HOME/colmap_install -DCMAKE_VERBOSE_MAKEFILE=TRUE -DOPENGL_opengl_LIBRARY=$HOME/miniconda3/envs/colmap/lib/libOpenGL.so.0 -DOPENGL_glx_LIBRARY=$HOME/miniconda3/envs/colmap/lib/libGLX.so.0  # need to point to the opengl binaries
-ninja
-ninja install
-
-# option 2: install from conda
-conda install conda-forge::colmap
-
-#####################################################
 export HUGSIM_WORKSPACE=$HOME/hugsim_workspace
-mkdir $HUGSIM_WORKSPACE
+mkdir -p $HUGSIM_WORKSPACE
 
 cd $HUGSIM_WORKSPACE
 git clone https://github.com/hyzhou404/HUGSIM/
@@ -95,7 +75,17 @@ wget https://github.com/zhiqi-li/storage/releases/download/v1.0/bevformer_r101_d
 wget https://github.com/OpenDriveLab/UniAD/releases/download/v1.0/uniad_base_track_map.pth
 wget https://github.com/OpenDriveLab/UniAD/releases/download/v1.0.1/uniad_base_e2e.pth
 
-# 2. VAD
+# download UniAD data info
+mkdir -p data/infos
+cd data/infos
+wget https://github.com/OpenDriveLab/UniAD/releases/download/v1.0/nuscenes_infos_temporal_train.pkl  # train_infos
+wget https://github.com/OpenDriveLab/UniAD/releases/download/v1.0/nuscenes_infos_temporal_val.pkl  # val_infos
+cd ..
+mkdir others
+cd others
+wget https://github.com/OpenDriveLab/UniAD/releases/download/v1.0/motion_anchor_infos_mode6.pkl
+
+# 2. VAD (not tested)
 cd $HUGSIM_WORKSPACE
 git clone https://github.com/hyzhou404/VAD_SIM  # a fork of VAD which contains hugsim integration
 cd VAD_SIM
@@ -109,7 +99,7 @@ pip install gdown
 gdown https://drive.google.com/uc?id=1KgCC_wFqPH0CQqdr6Pp2smBX5ARPaqne
 gdown https://drive.google.com/uc?id=1FLX-4LVm4z-RskghFbxGuYlcYOQmV5bS
 
-# 3. LTF (Latent TransFuser) + NAVSIM
+# 3. LTF (Latent TransFuser) + NAVSIM (not tested)
 cd $HUGSIM_WORKSPACE
 git clone https://github.com/hyzhou404/NAVSIM
 cd NAVSIM
@@ -140,7 +130,8 @@ python -m sAP3D.nusc_annotation_generator \
 # unclear whether just object interpolation is sufficient....  https://github.com/JeffWang987/ASAP/blob/main/docs/prepare_data.md
 
 # (optional) test reconstruction by modifying params as neccessary in the script data/nusc/run.sh and running
-cd $HUGSIM_WORKSPACE/HUGSIM/data; ./nusc/run.sh
+cd $HUGSIM_WORKSPACE/HUGSIM/data
+bash ./nusc/run.sh
 
 # (optional) test gaussian splat training
 seq=scene-0103
@@ -155,24 +146,13 @@ python -u train_ground.py --data_cfg ./configs/${dataset_name}.yaml \
 python -u train.py --data_cfg ./configs/${dataset_name}.yaml \
         --source_path ${input_path} --model_path ${output_path}
 
-
-
-# TODO: set the right paths for the models (UniAD, VAD, etc) in the client codes (we probably don't need to worry about paths for the datasets in the clients)
-# TODO: download model weights where necessary
-# TODO: test colmap with gpu
-# Run HUGSIM demos
-
-
-# sim_cuda=0
-# ad_cuda=1
-# scenario_dir=./configs/benchmark/nuscenes
-# for cfg in ${scenario_dir}/*.yaml; do
-#     echo ${cfg}
-#     CUDA_VISIBLE_DEVICES=${sim_cuda} \
-#     python closed_loop.py --scenario_path ${cfg} \
-#                         --base_path ./configs/sim/nuscenes_base.yaml \
-#                         --camera_path ./configs/sim/nuscenes_camera.yaml \
-#                         --kinematic_path ./configs/sim/kinematic.yaml \
-#                         --ad uniad \
-#                         --ad_cuda ${ad_cuda}
-# done
+# (optional) test closed loop simulation
+# set the params for the scenario config (e.g. configs/benchmark/nuscenes/scene-0383-easy-00.yaml)
+# set the params for the base config (e.g. configs/sim/nuscenes_base.yaml)
+# set the params for client config UniAD_SIM/tools/e2e.sh
+python closed_loop.py --scenario_path ./configs/benchmark/nuscenes/scene-0383-hard-00.yaml \
+                        --base_path ./configs/sim/nuscenes_base.yaml \
+                        --camera_path ./configs/sim/nuscenes_camera.yaml \
+                        --kinematic_path ./configs/sim/kinematic.yaml \
+                        --ad uniad \
+                        --ad_cuda 0

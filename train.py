@@ -37,7 +37,7 @@ def training(cfg):
 
     first_iter = 0
     prepare_output(cfg)
-    (ground_model_params, _) = torch.load(os.path.join(cfg.model_path, "ckpts", f"ground_chkpnt30000.pth"))
+    (ground_model_params, _) = torch.load(os.path.join(cfg.model_path, "ckpts", f"ground_chkpnt30000.pth"))  # TODO: add a param for this
     gaussians = GaussianModel(cfg.model.sh_degree, feat_mutable=True, affine=cfg.affine, ground_args=ground_model_params)
     scene = Scene(cfg, gaussians, unicycle=cfg.unicycle, uc_fit_iter=cfg.uc_fit_iter, data_type=cfg.data_type)
     

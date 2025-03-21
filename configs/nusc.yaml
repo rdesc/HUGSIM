@@ -2,8 +2,8 @@ source_path: "sourcepath"
 model_path: "modelpath"
 semantic: True
 affine: True
-unicycle: False
-uc_reg: False
+unicycle: True  # this does not seem to do anything... https://github.com/hyzhou404/HUGSIM/issues/10
+uc_reg: True    
 uc_fit_iter: 100
 ignore_dynamic: False
 data_type: nuscenes

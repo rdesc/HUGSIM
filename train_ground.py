@@ -28,8 +28,10 @@ results = {'train': {}, 'test': {}}
 try:
     from torch.utils.tensorboard import SummaryWriter
     TENSORBOARD_FOUND = True
+    print('TENSORBOARD_FOUND = True!')
 except ImportError:
     TENSORBOARD_FOUND = False
+    print('TENSORBOARD_FOUND = False!')
 
 # metrics
 m_psnr = PeakSignalNoiseRatio(data_range=1.0).to('cuda')

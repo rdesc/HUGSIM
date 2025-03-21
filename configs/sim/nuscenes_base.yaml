@@ -1,9 +1,9 @@
-realcar_path: /nas/users/hyzhou/PAMI2024/release/3DRealCar
-model_base: /nas/users/hyzhou/PAMI2024/release/outputs/nusc
-uniad_path:  /nas/users/hyzhou/PAMI2024/release/UniAD_Sim/tools/e2e.sh
-vad_path:  /nas/users/hyzhou/PAMI2024/release/VAD_Sim/tools/e2e.sh
-ltf_path: /nas/users/hyzhou/PAMI2024/release/navsim/ltf_e2e.sh
-output_dir: /nas/users/hyzhou/PAMI2024/release/outputs/benchmark/out/nusc_
+realcar_path: /home/mila/d/deschaer/hugsim_workspace/HUGSIM/data/sample_data/sample_data/3DRealCar
+model_base: /home/mila/d/deschaer/scratch/hugsim_data/sample_data/sample_data/model/scene-0383
+uniad_path:  /home/mila/d/deschaer/hugsim_workspace/UniAD_SIM/tools/e2e.sh
+vad_path:  /home/mila/d/deschaer/hugsim_workspace/VAD_SIM/tools/e2e.sh
+ltf_path: /home/mila/d/deschaer/hugsim_workspace/NAVSIM/ltf_e2e.sh
+output_dir: /home/mila/d/deschaer/scratch/hugsim_data/sample_data/sample_data/model/scene-0383/benchmark/
 HD_map:
-  path: /nas/datasets/nuScenes/raw/Trainval
-  version: nusc_trainval
+  path: /home/mila/d/deschaer/scratch/nuscenes/
+  version: nusc_trainval  # IDs are from https://github.com/NVlabs/trajdata/tree/main?tab=readme-ov-file#supported-datasets

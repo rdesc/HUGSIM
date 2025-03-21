@@ -66,10 +66,10 @@ dependencies:
       - pyquaternion
       - roma
       - runx==0.0.6
-      - trajdata
       - gymnasium
       - tensorboard
       # 3DGS https://github.com/graphdeco-inria/gaussian-splatting
       - submodules/simple-knn
       # other stuff
       - torchmetrics
+      - "trajdata[nusc,waymo]"  # see https://github.com/NVlabs/trajdata/tree/main

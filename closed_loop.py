@@ -54,6 +54,7 @@ def create_gym_env(cfg, output):
             obs, reward, terminated, truncated, info = env.step(action)
             cnt += 1
             done = terminated or truncated or cnt > 400
+            print('done', done, 'terminated', terminated, 'truncated', truncated, 'cnt', cnt)
 
         else:  # AD Side Crushed
             observations_save.append(obs)
@@ -113,7 +114,7 @@ if __name__ == "__main__":
     )
     cfg.base.output_dir = cfg.base.output_dir + args.ad
 
-    model_path = os.path.join(cfg.base.model_base, cfg.scenario.scene_name)
+    model_path = os.path.join(cfg.base.model_base)
     model_config = OmegaConf.load(os.path.join(model_path, 'cfg.yaml'))
     cfg.update(model_config)
     
